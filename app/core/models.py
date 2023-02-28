@@ -1,6 +1,7 @@
 """
 Database models.
 """
+from django.utils import timezone
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
@@ -8,6 +9,20 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+
+
+class BaseModel(models.Model):
+    """Base model that all model must have."""
+    created_at = models.DateTimeField(
+        auto_created=True,
+        default=timezone.now,
+        blank=True,
+        null=True
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
 
 
 class UserManager(BaseUserManager):
@@ -33,7 +48,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     """User in the system."""
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
@@ -45,7 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
 
 
-class Recipe(models.Model):
+class Recipe(BaseModel):
     """Recipe object."""
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -63,7 +78,7 @@ class Recipe(models.Model):
         return self.title
 
 
-class Tag(models.Model):
+class Tag(BaseModel):
     """Tag for filtering recipes."""
     name = models.CharField(max_length=255)
     user = models.ForeignKey(
@@ -75,7 +90,7 @@ class Tag(models.Model):
         return self.name
 
 
-class Ingredient(models.Model):
+class Ingredient(BaseModel):
     """Ingredient for recipes."""
     name = models.CharField(max_length=255)
     user = models.ForeignKey(
